@@ -3,13 +3,24 @@
 :root {
   --bg-color: #f9fafb;
   --text-color: #111111;
+  --text-secondary: #6b7280;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #1e2022;
     --text-color: #bbbbbb;
+    --text-secondary: #9ca3af;
   }
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 body {
@@ -19,16 +30,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  padding: 2rem;
+  height: 100dvh;
   box-sizing: border-box;
-}
-
-.content {
-  font-size: 0.875rem;
-  line-height: 2.2;
-  text-align: left;
-  max-width: 600px;
-  margin: 0 auto;
 }
