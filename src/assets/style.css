@@ -1,0 +1,34 @@
+/* /src/assets/style.css */
+
+:root {
+  --bg-color: #f9fafb;
+  --text-color: #111111;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1e2022;
+    --text-color: #bbbbbb;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.content {
+  font-size: 0.875rem;
+  line-height: 2.2;
+  text-align: left;
+  max-width: 600px;
+  margin: 0 auto;
+}

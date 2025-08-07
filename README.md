@@ -1,5 +1,3 @@
-# Run
-
 ```sh
 pnpm dev
 ```
