@@ -1,5 +1,9 @@
 /* /src/assets/style.css */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-color: #f9fafb;
   --text-color: #111111;

@@ -37,7 +37,7 @@
     <audio
       ref="audioRef"
       preload="none"
-      src="/2006070220120323.flac"
+      src="/assets/track-wEqzUYbv.flac"
       @canplay="onCanPlay"
       @play="isPlaying = true"
       @pause="isPlaying = false"
