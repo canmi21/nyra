@@ -44,20 +44,21 @@
         @pause="isPlaying = false"
         @ended="onAudioEnded"
         @error="onAudioError"
+        @loadedmetadata="onLoadedMetadata"
         style="display: none"
       />
     </div>
 
     <footer class="footer">
       <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-        沪 ICP 备 20028632 号
+        沪ICP备 20028632 号
       </a>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Play, Pause } from 'lucide-vue-next'
 
 const lyrics = `ずっと君の傍にいるよ
@@ -124,6 +125,12 @@ const onCanPlay = async () => {
   }
 }
 
+const onLoadedMetadata = () => {
+  if (audioRef.value) {
+    audioRef.value.volume = 0.3
+  }
+}
+
 const onAudioError = (e: Event) => {
   console.error('> Audio error:', e)
   hasStartedLoading.value = false
@@ -132,6 +139,12 @@ const onAudioError = (e: Event) => {
 const onAudioEnded = () => {
   isPlaying.value = false
 }
+
+onMounted(() => {
+  if (audioRef.value) {
+    audioRef.value.volume = 0.3
+  }
+})
 
 onUnmounted(() => {})
 </script>
