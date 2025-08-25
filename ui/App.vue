@@ -2,6 +2,22 @@
 
 <template>
   <div class="container">
+    <div class="dots-container" ref="dotsContainer">
+      <div
+        v-for="dot in dots"
+        :key="dot.id"
+        class="dot"
+        :style="{
+          left: dot.x + 'px',
+          top: dot.y + 'px',
+          opacity: dot.opacity,
+          transform: `scale(${dot.scale})`,
+          animationDuration: dot.animationDuration + 's',
+          animationDelay: dot.animationDelay + 's',
+        }"
+      ></div>
+    </div>
+
     <div class="content">
       <div class="line-with-button">
         <button @click="handlePlayClick" class="play-btn">
@@ -58,8 +74,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Play, Pause } from 'lucide-vue-next'
+
+interface Dot {
+  id: number
+  x: number
+  y: number
+  vx: number
+  vy: number
+  opacity: number
+  scale: number
+  life: number
+  maxLife: number
+  animationDuration: number
+  animationDelay: number
+}
 
 const lyrics = `ずっと君の傍にいるよ
 どんな未来が僕らを試したって きっと
@@ -95,6 +125,69 @@ const lineChars = (line: string) => [...line]
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
 const hasStartedLoading = ref(false)
+const dotsContainer = ref<HTMLElement | null>(null)
+const dots = ref<Dot[]>([])
+const maxDots = 25
+const dotIdCounter = ref(0)
+let animationFrameId: number | null = null
+let containerWidth = 0
+let containerHeight = 0
+
+const createDot = (): Dot => {
+  return {
+    id: dotIdCounter.value++,
+    x: Math.random() * containerWidth,
+    y: Math.random() * containerHeight,
+    vx: (Math.random() - 0.5) * 0.25,
+    vy: (Math.random() - 0.5) * 0.5,
+    opacity: Math.random() * 0.6 + 0.2,
+    scale: Math.random() * 0.8 + 0.4,
+    life: 0,
+    maxLife: Math.random() * 8000 + 4000,
+    animationDuration: Math.random() * 3 + 2,
+    animationDelay: Math.random() * 2,
+  }
+}
+
+const initDots = () => {
+  if (!dotsContainer.value) return
+
+  const rect = dotsContainer.value.getBoundingClientRect()
+  containerWidth = rect.width
+  containerHeight = rect.height
+
+  let currentDotCount = 0
+  const addDotsGradually = () => {
+    if (currentDotCount < maxDots) {
+      dots.value.push(createDot())
+      currentDotCount++
+      setTimeout(addDotsGradually, Math.random() * 300 + 100) // 100-400ms
+    }
+  }
+
+  addDotsGradually()
+}
+
+const updateDots = () => {
+  dots.value = dots.value.filter((dot) => {
+    dot.x += dot.vx
+    dot.y += dot.vy
+    dot.life += 16
+
+    const isOutOfBounds =
+      dot.x < -10 || dot.x > containerWidth + 10 || dot.y < -10 || dot.y > containerHeight + 10
+
+    const isLifeExpired = dot.life > dot.maxLife
+
+    return !isOutOfBounds && !isLifeExpired
+  })
+
+  while (dots.value.length < maxDots && Math.random() < 0.02) {
+    dots.value.push(createDot())
+  }
+
+  animationFrameId = requestAnimationFrame(updateDots)
+}
 
 const handlePlayClick = async () => {
   if (!audioRef.value) return
@@ -111,7 +204,7 @@ const handlePlayClick = async () => {
       }
     }
   } catch (err) {
-    console.warn('> Failed to play audio:', err)
+    console.warn('Failed to play audio:', err)
   }
 }
 
@@ -120,7 +213,7 @@ const onCanPlay = async () => {
     try {
       await audioRef.value?.play()
     } catch (err) {
-      console.warn('> Failed to play audio:', err)
+      console.warn('Failed to play audio:', err)
     }
   }
 }
@@ -132,7 +225,7 @@ const onLoadedMetadata = () => {
 }
 
 const onAudioError = (e: Event) => {
-  console.error('> Audio error:', e)
+  console.error('Audio error:', e)
   hasStartedLoading.value = false
 }
 
@@ -140,13 +233,31 @@ const onAudioEnded = () => {
   isPlaying.value = false
 }
 
-onMounted(() => {
+const handleResize = () => {
+  if (!dotsContainer.value) return
+  const rect = dotsContainer.value.getBoundingClientRect()
+  containerWidth = rect.width
+  containerHeight = rect.height
+}
+
+onMounted(async () => {
   if (audioRef.value) {
     audioRef.value.volume = 0.3
   }
+
+  await nextTick()
+  initDots()
+  updateDots()
+
+  window.addEventListener('resize', handleResize)
 })
 
-onUnmounted(() => {})
+onUnmounted(() => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+  }
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style>
@@ -166,9 +277,43 @@ onUnmounted(() => {})
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+}
+
+.dots-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: twinkle infinite ease-in-out alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
 }
 
 .content {
+  position: relative;
+  z-index: 2;
   max-width: 600px;
   padding: 2rem;
   box-sizing: border-box;
@@ -252,6 +397,7 @@ onUnmounted(() => {})
   color: var(--text-color);
   opacity: 0.6;
   pointer-events: none;
+  z-index: 2;
 }
 
 .footer a {
