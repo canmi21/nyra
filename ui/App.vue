@@ -1,50 +1,58 @@
-<!-- /src/App.vue -->
+<!-- /ui/App.vue -->
 
 <template>
-  <div class="content">
-    <div class="line-with-button">
-      <button @click="handlePlayClick" class="play-btn">
-        <Play v-if="!isPlaying" :size="16" fill="currentColor" />
-        <Pause v-else :size="16" fill="currentColor" />
-      </button>
-      <p class="line">
+  <div class="container">
+    <div class="content">
+      <div class="line-with-button">
+        <button @click="handlePlayClick" class="play-btn">
+          <Play v-if="!isPlaying" :size="16" fill="currentColor" />
+          <Pause v-else :size="16" fill="currentColor" />
+        </button>
+        <p class="line">
+          <span
+            v-for="(char, charIndex) in lineChars(lines[0])"
+            :key="charIndex"
+            class="char"
+            :style="{
+              animationDelay: `${lineStartTimes[0] + charIndex * charDelay}s`,
+            }"
+          >
+            {{ char }}
+          </span>
+        </p>
+      </div>
+
+      <p v-for="(line, lineIndex) in lines.slice(1)" :key="lineIndex + 1" class="line indented">
         <span
-          v-for="(char, charIndex) in lineChars(lines[0])"
+          v-for="(char, charIndex) in lineChars(line)"
           :key="charIndex"
           class="char"
           :style="{
-            animationDelay: `${lineStartTimes[0] + charIndex * charDelay}s`,
+            animationDelay: `${lineStartTimes[lineIndex + 1] + charIndex * charDelay}s`,
           }"
         >
           {{ char }}
         </span>
       </p>
+
+      <audio
+        ref="audioRef"
+        preload="none"
+        src="https://static.canmi.icu/track-wEqzUYbv.flac"
+        @canplay="onCanPlay"
+        @play="isPlaying = true"
+        @pause="isPlaying = false"
+        @ended="onAudioEnded"
+        @error="onAudioError"
+        style="display: none"
+      />
     </div>
 
-    <p v-for="(line, lineIndex) in lines.slice(1)" :key="lineIndex + 1" class="line indented">
-      <span
-        v-for="(char, charIndex) in lineChars(line)"
-        :key="charIndex"
-        class="char"
-        :style="{
-          animationDelay: `${lineStartTimes[lineIndex + 1] + charIndex * charDelay}s`,
-        }"
-      >
-        {{ char }}
-      </span>
-    </p>
-
-    <audio
-      ref="audioRef"
-      preload="none"
-      src="/assets/track-wEqzUYbv.flac"
-      @canplay="onCanPlay"
-      @play="isPlaying = true"
-      @pause="isPlaying = false"
-      @ended="onAudioEnded"
-      @error="onAudioError"
-      style="display: none"
-    />
+    <footer class="footer">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+        沪 ICP 备 20028632 号
+      </a>
+    </footer>
   </div>
 </template>
 
@@ -138,6 +146,15 @@ onUnmounted(() => {})
 </style>
 
 <style scoped>
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .content {
   max-width: 600px;
   padding: 2rem;
@@ -148,6 +165,7 @@ onUnmounted(() => {})
   font-weight: 600;
   max-height: 100dvh;
   overflow-y: auto;
+  padding-bottom: 4rem;
 }
 
 .line-with-button {
@@ -209,5 +227,28 @@ onUnmounted(() => {})
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.footer {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-color);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  pointer-events: auto;
+}
+
+.footer a:hover {
+  opacity: 1;
 }
 </style>
