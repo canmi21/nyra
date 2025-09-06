@@ -54,7 +54,7 @@
       <audio
         ref="audioRef"
         preload="none"
-        src="https://static.canmi.icu/track-wEqzUYbv.flac"
+        src="https://static.cloudfaro.com/track-wEqcUYbv.flac"
         @canplay="onCanPlay"
         @play="isPlaying = true"
         @pause="isPlaying = false"
